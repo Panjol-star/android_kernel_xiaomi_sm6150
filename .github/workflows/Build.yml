@@ -39,11 +39,9 @@ jobs:
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            bc bison build-essential ccache curl flex git \
-            libncurses-dev libssl-dev libxml2 lz4 lzop \
-            python3 rsync unzip zip zlib1g-dev
-
+          sudo apt install -y bc cpio flex bison aptitude git python-is-python3 tar aria2 perl wget curl lz4 libssl-dev \
+            gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi
+            
       - name: Setup Clang
         run: |
           echo "Cloning Clang..."
