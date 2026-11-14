@@ -1,0 +1,69 @@
+name: Build Kernel
+
+on:
+  workflow_dispatch:
+    inputs:
+      device:
+        description: 'Pilih Codename Device'
+        required: true
+        default: 'courbet'
+        type: choice
+        options:
+          - sweet
+          - courbet
+          - tucana
+          - toco
+          - phoenix
+          - davinci
+
+jobs:
+  build:
+    name: Build Custom Kernel
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write # Wajib agar GitHub Actions diizinkan membuat Release
+    env:
+      TZ: Asia/Jakarta
+
+    steps:
+      - name: Set Timezone to WIB
+        run: |
+          sudo timedatectl set-timezone Asia/Jakarta
+          date
+
+      - name: Checkout Kernel Source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            bc bison build-essential ccache curl flex git \
+            libncurses-dev libssl-dev libxml2 lz4 lzop \
+            python3 rsync unzip zip zlib1g-dev
+
+      - name: Setup Clang
+        run: |
+          echo "Cloning Clang..."
+          git clone --depth=1 https://gitlab.com/crdroidandroid/android_prebuilts_clang_host_linux-x86_clang-r563880c.git clang
+          clang/bin/clang --version
+
+      - name: Compile Kernel
+        env:
+          DEVICE: ${{ github.event.inputs.device }}
+        run: |
+          chmod +x build.sh
+          ./build.sh
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "*.zip"
+          name: Kernel for ${{ github.event.inputs.device }}
+          tag_name: ${{ github.event.inputs.device }}-${{ github.run_id }}
+          body: |
+            **Kernel Build Completed**
+            - **Device:** ${{ github.event.inputs.device }}
+            
