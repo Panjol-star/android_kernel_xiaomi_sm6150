@@ -38,7 +38,7 @@ echo -e "\nStarting compilation for $DEVICE...\n"
 ARCH=arm64 ./scripts/kconfig/merge_config.sh -O out \
   arch/arm64/configs/vendor/sdmsteppe-perf_defconfig \
   arch/arm64/configs/vendor/courbet.config
-
+make ARCH=arm64 O=out olddefconfig
 make -j$(nproc) \
     O=out \
     ARCH=arm64 \
