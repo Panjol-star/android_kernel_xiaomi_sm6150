@@ -39,7 +39,7 @@ mkdir -p out
 ARCH=arm64 LLVM=1 LLVM_IAS=1 ./scripts/kconfig/merge_config.sh -O out \
   arch/arm64/configs/vendor/sdmsteppe-perf_defconfig \
   arch/arm64/configs/vendor/${DEVICE}.config
-make ARCH=arm64 O=out olddefconfig
+make ARCH=arm64 O=out LLVM=1 LLVM_IAS=1 olddefconfig
 make -j$(nproc) \
     O=out \
     ARCH=arm64 \
@@ -52,8 +52,26 @@ kernel="out/arch/arm64/boot/Image.gz"
 dtbo="out/arch/arm64/boot/dtbo.img"
 dtb="out/arch/arm64/boot/dtb.img"
 
-if [ ! -f "$kernel" ] || [ ! -f "$dtbo" ] || [ ! -f "$dtb" ]; then
-	echo -e "\nCompilation failed!"
+# Package dtb.img and dtbo.img from compiled DTS outputs if not created by make
+if [ -f "$kernel" ]; then
+    if [ ! -f "$dtb" ]; then
+        find out/arch/arm64/boot/dts -name "*.dtb" -exec cat {} + > "$dtb"
+    fi
+
+    if [ ! -f "$dtbo" ]; then
+        MKDTBOIMG=$(find scripts tools -name "mkdtboimg.py" 2>/dev/null | head -n 1)
+        DTBO_FILES=$(find out/arch/arm64/boot/dts -name "*.dtbo")
+        if [ -n "$MKDTBOIMG" ] && [ -n "$DTBO_FILES" ]; then
+            cp "$MKDTBOIMG" out/mkdtboimg.py
+            sed -i 's/\.tostring()/\.tobytes()/g' out/mkdtboimg.py
+            python3 out/mkdtboimg.py create "$dtbo" $DTBO_FILES
+        fi
+    fi
+fi
+
+if [ ! -f "$kernel" ] || [ ! -s "$dtbo" ] || [ ! -s "$dtb" ]; then
+	echo -e "\nCompilation failed! Missing or empty output:"
+	ls -lh "$kernel" "$dtbo" "$dtb" 2>&1
 	exit 1
 fi
 
