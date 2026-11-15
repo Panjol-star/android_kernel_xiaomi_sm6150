@@ -15,7 +15,11 @@ on:
           - toco
           - phoenix
           - davinci
-
+      localversion:
+        description: 'KBUILD_LOCALVERSION (contoh: -Custom)'
+        required: false
+        default: '-Custom'
+        type: string
 jobs:
   build:
     name: Build Custom Kernel

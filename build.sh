@@ -24,6 +24,8 @@ ZIPNAME="${DEVICE}-$(date '+%Y%m%d-%H%M').zip"
 export ARCH=arm64
 export KBUILD_BUILD_USER=runner
 export KBUILD_BUILD_HOST=github@workflows
+export KBUILD_LOCALVERSION="${KBUILD_LOCALVERSION:--Custom}"
+export LOCALVERSION="$KBUILD_LOCALVERSION"
 
 # Menyesuaikan path clang dengan direktori hasil clone di GitHub Actions
 export PATH="${PWD}/clang/bin:$PATH"
@@ -39,7 +41,13 @@ mkdir -p out
 ARCH=arm64 LLVM=1 LLVM_IAS=1 ./scripts/kconfig/merge_config.sh -O out \
   arch/arm64/configs/vendor/sdmsteppe-perf_defconfig \
   arch/arm64/configs/vendor/${DEVICE}.config
+./scripts/config --file out/.config --set-str CONFIG_LOCALVERSION ""
 make ARCH=arm64 LLVM=1 LLVM_IAS=1 O=out olddefconfig
+
+echo "=== Cek CONFIG_LOCALVERSION ==="
+rg -i "CONFIG_LOCALVERSION" out/.config || grep -i "CONFIG_LOCALVERSION" out/.config
+echo "==============================="
+
 make -j$(nproc) \
     O=out \
     ARCH=arm64 \
