@@ -43,19 +43,12 @@ jobs:
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            aria2 bc bison build-essential ccache curl flex \
-            git kmod libdw-dev libelf-dev libssl-dev lz4 \
-            python3 rsync xxd zip zlib1g-dev zstd
-
-      - name: Setup Neutron Clang
+          sudo apt install -y bc bison build-essential ccache curl erofs-utils flex g++-multilib gcc-multilib git git-lfs gnupg gperf imagemagick kmod protobuf-compiler python3-protobuf lib32readline-dev lib32z1-dev libdw-dev libelf-dev libgnutls28-dev lz4 libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc xxd zip zlib1g-dev
+            
+      - name: Setup Clang
         run: |
-          aria2c -x 16 -s 16 -k 1M --file-allocation=none --console-log-level=warn \
-            "https://github.com/Neutron-Toolchains/clang-build-catalogue/releases/download/06092026/neutron-clang-06092026.tar.zst" \
-            -o neutron-clang.tar.zst
-          mkdir -p clang
-          tar --use-compress-program="zstd -d -T0" -xf neutron-clang.tar.zst -C clang
-          rm -f neutron-clang.tar.zst
+          echo "Cloning Clang..."
+          git clone --depth=1 https://gitlab.com/crdroidandroid/android_prebuilts_clang_host_linux-x86_clang-r563880c.git clang
           clang/bin/clang --version
 
       - name: Compile Kernel
