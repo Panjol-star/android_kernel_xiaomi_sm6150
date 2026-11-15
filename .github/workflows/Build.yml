@@ -53,7 +53,8 @@ jobs:
 
       - name: Compile Kernel
         env:
-          DEVICE: ${{ github.event.inputs.device }}
+           DEVICE: ${{ github.event.inputs.device }}
+           KBUILD_LOCALVERSION: ${{ github.event.inputs.localversion }}
         run: |
           chmod +x build.sh
           ./build.sh
